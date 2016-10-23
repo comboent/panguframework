@@ -7,27 +7,26 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>pangu-c3p0</artifactId>
+    <artifactId>pangu-mybatis</artifactId>
     <packaging>jar</packaging>
 
-    <name>pangu-c3p0</name>
+    <name>pangu-mybatis</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.mchange</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>0.9.5.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.40</version>
+            <groupId>org.panguframework</groupId>
+            <artifactId>pangu-c3p0</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc14</artifactId>
-            <version>10.2.0.5.0</version>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.3.1</version>
         </dependency>
     </dependencies>
 </project>
