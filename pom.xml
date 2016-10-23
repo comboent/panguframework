@@ -14,6 +14,7 @@
     </properties>
     <modules>
         <module>log</module>
+        <module>c3p0</module>
     </modules>
     <build>
         <resources>
