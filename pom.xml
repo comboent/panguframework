@@ -7,7 +7,6 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
     <name>pangu</name>
-    <description>准备上传到github</description>
     <properties>
         <ENCODING>UTF-8</ENCODING>
         <JDK>1.7</JDK>
