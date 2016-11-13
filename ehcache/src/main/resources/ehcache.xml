@@ -1,21 +1,26 @@
-<eh:config
-        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-        xmlns:eh='http://www.ehcache.org/v3'
-        xsi:schemaLocation="
-        http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.1.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache updateCheck="true" monitoring="autodetect" dynamicConfig="true">
 
-    <eh:cache-template name="base">
-        <eh:expiry>
-            <eh:none/>
-        </eh:expiry>
-        <eh:resources>
-            <eh:heap unit="entries">2000</eh:heap>
-            <eh:offheap unit="MB">1024</eh:offheap>
-        </eh:resources>
-    </eh:cache-template>
-
-    <eh:cache alias="demo" uses-template="base">
-        <eh:key-type>java.lang.String</eh:key-type>
-        <eh:value-type>java.lang.String</eh:value-type>
-    </eh:cache>
-</eh:config>
+    <diskStore path="java.io.tmpdir"/>
+    <!--maxBytesLocalOffHeap=128MB  maxBytesLocalDisk=256MB-->
+    <defaultCache
+            maxEntriesLocalHeap="0"
+            maxEntriesLocalDisk="0"
+            eternal="true"
+            overflowToOffHeap="false"
+            diskSpoolBufferSizeMB="30"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU">
+        <persistence strategy="none"/>
+    </defaultCache>
+    <cache name="VolumeQueryService.queryTotalSegmentMarketVolume"
+           maxEntriesLocalHeap="0"
+           maxEntriesLocalDisk="0"
+           eternal="true"
+           overflowToOffHeap="false"
+           diskSpoolBufferSizeMB="30"
+           diskExpiryThreadIntervalSeconds="120"
+           memoryStoreEvictionPolicy="LRU">
+        <persistence strategy="none"/>
+    </cache>
+</ehcache>
