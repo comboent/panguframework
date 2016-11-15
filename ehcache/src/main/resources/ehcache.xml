@@ -8,6 +8,8 @@
             maxEntriesLocalDisk="0"
             eternal="true"
             overflowToOffHeap="false"
+            overflowToDisk="true"
+            maxElementsInMemory="1000"
             diskSpoolBufferSizeMB="30"
             diskExpiryThreadIntervalSeconds="120"
             memoryStoreEvictionPolicy="LRU">
