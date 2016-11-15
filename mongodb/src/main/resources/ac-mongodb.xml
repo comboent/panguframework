@@ -20,8 +20,15 @@
                       port="${mongo.port}"
                       dbname="${mongo.dbname}"
                       />
+    <bean id="noClassFieldTypeMapper" class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+        <constructor-arg name="typeKey">
+            <null/>
+        </constructor-arg>
+    </bean>
+    <mongo:mapping-converter id="mappingConverter" db-factory-ref="mongoDbFactory" type-mapper-ref="noClassFieldTypeMapper" />
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+        <constructor-arg name="mongoConverter" ref="mappingConverter"/>
     </bean>
 </beans>
