@@ -17,7 +17,7 @@
         <constructor-arg index="1">
             <list>
                 <bean class="redis.clients.jedis.JedisShardInfo">
-                    <constructor-arg name="host" value="${redis.uri}"/>
+                    <constructor-arg value="${redis.uri.master}"/>
                 </bean>
             </list>
         </constructor-arg>

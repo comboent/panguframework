@@ -13,7 +13,6 @@
             diskSpoolBufferSizeMB="30"
             diskExpiryThreadIntervalSeconds="120"
             memoryStoreEvictionPolicy="LRU">
-        <persistence strategy="none"/>
     </defaultCache>
     <cache name="testCache"
            maxEntriesLocalHeap="0"
@@ -25,6 +24,5 @@
            diskSpoolBufferSizeMB="30"
            diskExpiryThreadIntervalSeconds="120"
            memoryStoreEvictionPolicy="LRU">
-        <persistence strategy="none"/>
     </cache>
 </ehcache>
