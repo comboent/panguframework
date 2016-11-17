@@ -9,12 +9,14 @@ import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Component
-public class Redis implements JedisCommands {
+public class BinaryRedis implements BinaryJedisCommands {
+
     private static final Logger log = LoggerFactory.getLogger(Redis.class);
 
     @Autowired
@@ -26,11 +28,11 @@ public class Redis implements JedisCommands {
         } catch (Exception e) {
             log.error("getRedisClent error", e);
         }
-       return null;
+        return null;
     }
 
     @Override
-    public String set(String key, String value) {
+    public String set(byte[] key, byte[] value) {
         String result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -47,24 +49,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String set(String key, String value, String nxxx, String expx, long time) {
-        String result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.set(key, value, nxxx, expx, time);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public String set(String key, String value, String nxxx) {
+    public String set(byte[] key, byte[] value, byte[] nxxx) {
         String result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -81,8 +66,25 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String get(String key) {
+    public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time) {
         String result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.set(key, value, nxxx, expx, time);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public byte[] get(byte[] key) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -98,7 +100,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Boolean exists(String key) {
+    public Boolean exists(byte[] key) {
         Boolean result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -115,7 +117,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long persist(String key) {
+    public Long persist(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -132,7 +134,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String type(String key) {
+    public String type(byte[] key) {
         String result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -149,7 +151,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long expire(String key, int seconds) {
+    public Long expire(byte[] key, int seconds) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -183,7 +185,24 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long expireAt(String key, long unixTime) {
+    public Long pexpire(byte[] key, long milliseconds) {
+        Long result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.pexpire(key, milliseconds);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public Long expireAt(byte[] key, long unixTime) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -200,7 +219,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long pexpireAt(String key, long millisecondsTimestamp) {
+    public Long pexpireAt(byte[] key, long millisecondsTimestamp) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -217,7 +236,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long ttl(String key) {
+    public Long ttl(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -234,24 +253,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long pttl(String key) {
-        Long result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.pttl(key);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public Boolean setbit(String key, long offset, boolean value) {
+    public Boolean setbit(byte[] key, long offset, boolean value) {
         Boolean result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -268,7 +270,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Boolean setbit(String key, long offset, String value) {
+    public Boolean setbit(byte[] key, long offset, byte[] value) {
         Boolean result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -285,7 +287,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Boolean getbit(String key, long offset) {
+    public Boolean getbit(byte[] key, long offset) {
         Boolean result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -302,7 +304,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long setrange(String key, long offset, String value) {
+    public Long setrange(byte[] key, long offset, byte[] value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -319,8 +321,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String getrange(String key, long startOffset, long endOffset) {
-        String result = null;
+    public byte[] getrange(byte[] key, long startOffset, long endOffset) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -336,8 +338,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String getSet(String key, String value) {
-        String result = null;
+    public byte[] getSet(byte[] key, byte[] value) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -353,7 +355,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long setnx(String key, String value) {
+    public Long setnx(byte[] key, byte[] value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -370,7 +372,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String setex(String key, int seconds, String value) {
+    public String setex(byte[] key, int seconds, byte[] value) {
         String result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -387,24 +389,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String psetex(String key, long milliseconds, String value) {
-        String result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.psetex(key, milliseconds, value);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public Long decrBy(String key, long integer) {
+    public Long decrBy(byte[] key, long integer) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -421,7 +406,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long decr(String key) {
+    public Long decr(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -438,7 +423,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long incrBy(String key, long integer) {
+    public Long incrBy(byte[] key, long integer) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -455,7 +440,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Double incrByFloat(String key, double value) {
+    public Double incrByFloat(byte[] key, double value) {
         Double result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -472,7 +457,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long incr(String key) {
+    public Long incr(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -489,7 +474,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long append(String key, String value) {
+    public Long append(byte[] key, byte[] value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -506,8 +491,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String substr(String key, int start, int end) {
-        String result = null;
+    public byte[] substr(byte[] key, int start, int end) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -523,7 +508,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long hset(String key, String field, String value) {
+    public Long hset(byte[] key, byte[] field, byte[] value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -540,8 +525,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String hget(String key, String field) {
-        String result = null;
+    public byte[] hget(byte[] key, byte[] field) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -557,7 +542,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long hsetnx(String key, String field, String value) {
+    public Long hsetnx(byte[] key, byte[] field, byte[] value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -574,7 +559,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String hmset(String key, Map<String, String> hash) {
+    public String hmset(byte[] key, Map<byte[], byte[]> hash) {
         String result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -591,8 +576,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> hmget(String key, String... fields) {
-        List<String> result = null;
+    public List<byte[]> hmget(byte[] key, byte[]... fields) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -608,7 +593,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long hincrBy(String key, String field, long value) {
+    public Long hincrBy(byte[] key, byte[] field, long value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -625,7 +610,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Double hincrByFloat(String key, String field, double value) {
+    public Double hincrByFloat(byte[] key, byte[] field, double value) {
         Double result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -642,7 +627,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Boolean hexists(String key, String field) {
+    public Boolean hexists(byte[] key, byte[] field) {
         Boolean result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -659,7 +644,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long hdel(String key, String... field) {
+    public Long hdel(byte[] key, byte[]... field) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -676,7 +661,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long hlen(String key) {
+    public Long hlen(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -693,8 +678,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> hkeys(String key) {
-        Set<String> result = null;
+    public Set<byte[]> hkeys(byte[] key) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -710,8 +695,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> hvals(String key) {
-        List<String> result = null;
+    public Collection<byte[]> hvals(byte[] key) {
+        Collection<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -727,8 +712,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Map<String, String> hgetAll(String key) {
-        Map<String, String> result = null;
+    public Map<byte[], byte[]> hgetAll(byte[] key) {
+        Map<byte[], byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -744,14 +729,14 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long rpush(String key, String... string) {
+    public Long rpush(byte[] key, byte[]... args) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
         }
         try {
-            result = shardedJedis.rpush(key, string);
+            result = shardedJedis.rpush(key, args);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         } finally {
@@ -761,14 +746,14 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long lpush(String key, String... string) {
+    public Long lpush(byte[] key, byte[]... args) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
         }
         try {
-            result = shardedJedis.lpush(key, string);
+            result = shardedJedis.lpush(key, args);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         } finally {
@@ -778,7 +763,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long llen(String key) {
+    public Long llen(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -795,8 +780,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> lrange(String key, long start, long end) {
-        List<String> result = null;
+    public List<byte[]> lrange(byte[] key, long start, long end) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -812,7 +797,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String ltrim(String key, long start, long end) {
+    public String ltrim(byte[] key, long start, long end) {
         String result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -829,8 +814,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String lindex(String key, long index) {
-        String result = null;
+    public byte[] lindex(byte[] key, long index) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -846,7 +831,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String lset(String key, long index, String value) {
+    public String lset(byte[] key, long index, byte[] value) {
         String result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -863,7 +848,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long lrem(String key, long count, String value) {
+    public Long lrem(byte[] key, long count, byte[] value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -880,8 +865,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String lpop(String key) {
-        String result = null;
+    public byte[] lpop(byte[] key) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -897,8 +882,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String rpop(String key) {
-        String result = null;
+    public byte[] rpop(byte[] key) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -914,7 +899,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long sadd(String key, String... member) {
+    public Long sadd(byte[] key, byte[]... member) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -931,8 +916,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> smembers(String key) {
-        Set<String> result = null;
+    public Set<byte[]> smembers(byte[] key) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -948,7 +933,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long srem(String key, String... member) {
+    public Long srem(byte[] key, byte[]... member) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -965,8 +950,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String spop(String key) {
-        String result = null;
+    public byte[] spop(byte[] key) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -982,8 +967,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> spop(String key, long count) {
-        Set<String> result = null;
+    public Set<byte[]> spop(byte[] key, long count) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -999,7 +984,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long scard(String key) {
+    public Long scard(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1016,7 +1001,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Boolean sismember(String key, String member) {
+    public Boolean sismember(byte[] key, byte[] member) {
         Boolean result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1033,8 +1018,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String srandmember(String key) {
-        String result = null;
+    public byte[] srandmember(byte[] key) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1050,8 +1035,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> srandmember(String key, int count) {
-        List<String> result = null;
+    public List<byte[]> srandmember(byte[] key, int count) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1067,7 +1052,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long strlen(String key) {
+    public Long strlen(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1084,7 +1069,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zadd(String key, double score, String member) {
+    public Long zadd(byte[] key, double score, byte[] member) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1101,7 +1086,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zadd(String key, double score, String member, ZAddParams params) {
+    public Long zadd(byte[] key, double score, byte[] member, ZAddParams params) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1118,7 +1103,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zadd(String key, Map<String, Double> scoreMembers) {
+    public Long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1135,7 +1120,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
+    public Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1152,8 +1137,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrange(String key, long start, long end) {
-        Set<String> result = null;
+    public Set<byte[]> zrange(byte[] key, long start, long end) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1169,7 +1154,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zrem(String key, String... member) {
+    public Long zrem(byte[] key, byte[]... member) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1186,7 +1171,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Double zincrby(String key, double score, String member) {
+    public Double zincrby(byte[] key, double score, byte[] member) {
         Double result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1203,7 +1188,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Double zincrby(String key, double score, String member, ZIncrByParams params) {
+    public Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params) {
         Double result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1220,7 +1205,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zrank(String key, String member) {
+    public Long zrank(byte[] key, byte[] member) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1237,7 +1222,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zrevrank(String key, String member) {
+    public Long zrevrank(byte[] key, byte[] member) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1254,8 +1239,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrevrange(String key, long start, long end) {
-        Set<String> result = null;
+    public Set<byte[]> zrevrange(byte[] key, long start, long end) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1271,7 +1256,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrangeWithScores(String key, long start, long end) {
+    public Set<Tuple> zrangeWithScores(byte[] key, long start, long end) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1288,7 +1273,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrevrangeWithScores(String key, long start, long end) {
+    public Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1305,7 +1290,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zcard(String key) {
+    public Long zcard(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1322,7 +1307,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Double zscore(String key, String member) {
+    public Double zscore(byte[] key, byte[] member) {
         Double result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1339,8 +1324,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> sort(String key) {
-        List<String> result = null;
+    public List<byte[]> sort(byte[] key) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1356,8 +1341,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> sort(String key, SortingParams sortingParameters) {
-        List<String> result = null;
+    public List<byte[]> sort(byte[] key, SortingParams sortingParameters) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1373,7 +1358,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zcount(String key, double min, double max) {
+    public Long zcount(byte[] key, double min, double max) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1390,7 +1375,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zcount(String key, String min, String max) {
+    public Long zcount(byte[] key, byte[] min, byte[] max) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1407,8 +1392,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrangeByScore(String key, double min, double max) {
-        Set<String> result = null;
+    public Set<byte[]> zrangeByScore(byte[] key, double min, double max) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1424,8 +1409,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrangeByScore(String key, String min, String max) {
-        Set<String> result = null;
+    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1441,8 +1426,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrevrangeByScore(String key, double max, double min) {
-        Set<String> result = null;
+    public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1458,8 +1443,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
-        Set<String> result = null;
+    public Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1475,8 +1460,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrevrangeByScore(String key, String max, String min) {
-        Set<String> result = null;
+    public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1492,8 +1477,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrangeByScore(String key, String min, String max, int offset, int count) {
-        Set<String> result = null;
+    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1509,8 +1494,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
-        Set<String> result = null;
+    public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1526,7 +1511,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
+    public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1543,7 +1528,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
+    public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1560,7 +1545,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
+    public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1577,8 +1562,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
-        Set<String> result = null;
+    public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1594,7 +1579,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
+    public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1611,7 +1596,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
+    public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1628,7 +1613,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
+    public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1645,7 +1630,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
+    public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1662,7 +1647,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
+    public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
         Set<Tuple> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1679,7 +1664,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zremrangeByRank(String key, long start, long end) {
+    public Long zremrangeByRank(byte[] key, long start, long end) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1696,7 +1681,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zremrangeByScore(String key, double start, double end) {
+    public Long zremrangeByScore(byte[] key, double start, double end) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1713,7 +1698,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zremrangeByScore(String key, String start, String end) {
+    public Long zremrangeByScore(byte[] key, byte[] start, byte[] end) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1730,7 +1715,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zlexcount(String key, String min, String max) {
+    public Long zlexcount(byte[] key, byte[] min, byte[] max) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1747,8 +1732,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrangeByLex(String key, String min, String max) {
-        Set<String> result = null;
+    public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1764,8 +1749,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrangeByLex(String key, String min, String max, int offset, int count) {
-        Set<String> result = null;
+    public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1781,8 +1766,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrevrangeByLex(String key, String max, String min) {
-        Set<String> result = null;
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1798,8 +1783,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
-        Set<String> result = null;
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
+        Set<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1815,7 +1800,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long zremrangeByLex(String key, String min, String max) {
+    public Long zremrangeByLex(byte[] key, byte[] min, byte[] max) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1832,7 +1817,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value) {
+    public Long linsert(byte[] key, BinaryClient.LIST_POSITION where, byte[] pivot, byte[] value) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1849,14 +1834,14 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long lpushx(String key, String... string) {
+    public Long lpushx(byte[] key, byte[]... arg) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
         }
         try {
-            result = shardedJedis.lpushx(key, string);
+            result = shardedJedis.lpushx(key, arg);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         } finally {
@@ -1866,14 +1851,14 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long rpushx(String key, String... string) {
+    public Long rpushx(byte[] key, byte[]... arg) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
         }
         try {
-            result = shardedJedis.rpushx(key, string);
+            result = shardedJedis.rpushx(key, arg);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         } finally {
@@ -1883,8 +1868,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> blpop(String arg) {
-        List<String> result = null;
+    public List<byte[]> blpop(byte[] arg) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1900,25 +1885,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> blpop(int timeout, String key) {
-        List<String> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.blpop(timeout, key);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public List<String> brpop(String arg) {
-        List<String> result = null;
+    public List<byte[]> brpop(byte[] arg) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -1934,24 +1902,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> brpop(int timeout, String key) {
-        List<String> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.brpop(timeout, key);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public Long del(String key) {
+    public Long del(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -1968,14 +1919,14 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public String echo(String string) {
-        String result = null;
+    public byte[] echo(byte[] arg) {
+        byte[] result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
         }
         try {
-            result = shardedJedis.echo(string);
+            result = shardedJedis.echo(arg);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         } finally {
@@ -1985,7 +1936,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long move(String key, int dbIndex) {
+    public Long move(byte[] key, int dbIndex) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2002,7 +1953,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long bitcount(String key) {
+    public Long bitcount(byte[] key) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2019,7 +1970,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long bitcount(String key, long start, long end) {
+    public Long bitcount(byte[] key, long start, long end) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2036,195 +1987,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long bitpos(String key, boolean value) {
-        Long result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.bitpos(key, value);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public Long bitpos(String key, boolean value, BitPosParams params) {
-        Long result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.bitpos(key, value, params);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<Map.Entry<String, String>> hscan(String key, int cursor) {
-        ScanResult<Map.Entry<String, String>> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.hscan(key, cursor);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<String> sscan(String key, int cursor) {
-        ScanResult<String> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.sscan(key, cursor);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    @Deprecated
-    public ScanResult<Tuple> zscan(String key, int cursor) {
-        ScanResult<Tuple> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.zscan(key, cursor);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<Map.Entry<String, String>> hscan(String key, String cursor) {
-        ScanResult<Map.Entry<String, String>> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.hscan(key, cursor);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
-        ScanResult<Map.Entry<String, String>> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.hscan(key, cursor, params);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<String> sscan(String key, String cursor) {
-        ScanResult<String> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.sscan(key, cursor);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
-        ScanResult<String> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.sscan(key, cursor, params);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<Tuple> zscan(String key, String cursor) {
-        ScanResult<Tuple> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.zscan(key, cursor);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
-        ScanResult<Tuple> result = null;
-        ShardedJedis shardedJedis = getRedisClient();
-        if (shardedJedis == null) {
-            return result;
-        }
-        try {
-            result = shardedJedis.zscan(key, cursor, params);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            shardedJedis.close();
-        }
-        return result;
-    }
-
-    @Override
-    public Long pfadd(String key, String... elements) {
+    public Long pfadd(byte[] key, byte[]... elements) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2241,7 +2004,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public long pfcount(String key) {
+    public long pfcount(byte[] key) {
         long result = 0;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2258,7 +2021,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long geoadd(String key, double longitude, double latitude, String member) {
+    public Long geoadd(byte[] key, double longitude, double latitude, byte[] member) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2275,7 +2038,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
+    public Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
         Long result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2292,7 +2055,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Double geodist(String key, String member1, String member2) {
+    public Double geodist(byte[] key, byte[] member1, byte[] member2) {
         Double result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2309,7 +2072,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public Double geodist(String key, String member1, String member2, GeoUnit unit) {
+    public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
         Double result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2326,8 +2089,8 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<String> geohash(String key, String... members) {
-        List<String> result = null;
+    public List<byte[]> geohash(byte[] key, byte[]... members) {
+        List<byte[]> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
             return result;
@@ -2343,7 +2106,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<GeoCoordinate> geopos(String key, String... members) {
+    public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
         List<GeoCoordinate> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2360,7 +2123,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
         List<GeoRadiusResponse> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2377,7 +2140,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
         List<GeoRadiusResponse> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2394,7 +2157,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
+    public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit) {
         List<GeoRadiusResponse> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2411,7 +2174,7 @@ public class Redis implements JedisCommands {
     }
 
     @Override
-    public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
+    public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
         List<GeoRadiusResponse> result = null;
         ShardedJedis shardedJedis = getRedisClient();
         if (shardedJedis == null) {
@@ -2419,6 +2182,108 @@ public class Redis implements JedisCommands {
         }
         try {
             result = shardedJedis.georadiusByMember(key, member, radius, unit, param);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
+        ScanResult<Map.Entry<byte[], byte[]>> result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.hscan(key, cursor);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
+        ScanResult<Map.Entry<byte[], byte[]>> result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.hscan(key, cursor, params);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
+        ScanResult<byte[]> result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.sscan(key, cursor);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params) {
+        ScanResult<byte[]> result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.sscan(key, cursor, params);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
+        ScanResult<Tuple> result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.zscan(key, cursor);
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            shardedJedis.close();
+        }
+        return result;
+    }
+
+    @Override
+    public ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params) {
+        ScanResult<Tuple> result = null;
+        ShardedJedis shardedJedis = getRedisClient();
+        if (shardedJedis == null) {
+            return result;
+        }
+        try {
+            result = shardedJedis.zscan(key, cursor, params);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         } finally {
