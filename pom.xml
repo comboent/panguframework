@@ -19,6 +19,7 @@
         <module>springweb</module>
         <module>ehcache</module>
         <module>mongodb</module>
+        <module>redis</module>
     </modules>
     <build>
         <resources>
