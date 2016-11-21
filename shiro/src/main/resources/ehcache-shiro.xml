@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache updateCheck="true" monitoring="autodetect" dynamicConfig="true">
+
+    <diskStore path="java.io.tmpdir"/>
+    <!--maxBytesLocalOffHeap=128MB  maxBytesLocalDisk=256MB-->
+    <defaultCache
+            maxEntriesLocalHeap="0"
+            maxEntriesLocalDisk="0"
+            eternal="true"
+            overflowToOffHeap="false"
+            overflowToDisk="true"
+            maxElementsInMemory="1000"
+            diskSpoolBufferSizeMB="30"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU">
+    </defaultCache>
+    <cache name="shiro-activeSessionCache"
+           maxEntriesLocalHeap="10000"
+           overflowToDisk="false"
+           eternal="false"
+           diskPersistent="false"
+           timeToLiveSeconds="0"
+           timeToIdleSeconds="0"
+           statistics="true"/>
+</ehcache>

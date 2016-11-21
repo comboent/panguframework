@@ -20,6 +20,7 @@
         <module>ehcache</module>
         <module>mongodb</module>
         <module>redis</module>
+        <module>shiro</module>
     </modules>
     <build>
         <resources>
