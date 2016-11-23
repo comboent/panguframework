@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--生成加盐密码散列值-->
+    <bean id="defaultHashService" class="org.apache.shiro.crypto.hash.DefaultHashService">
+        <property name="hashAlgorithmName" value="SHA-256"/>
+    </bean>
+    <bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+        <!--此处散列算法需要与org.apache.shiro.crypto.hash.DefaultHashService中的散列算法一致-->
+        <property name="hashAlgorithmName" value="SHA-256"/>
+    </bean>
+
+    <bean id="subjectFactory" class="com.zyt.catarc.enterprise.shiro.factory.StatelessDefaultSubjectFactory"/>
+
+    <bean id="shiroCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"/>
+    </bean>
+
+    <bean id="statelessRealm" class="com.zyt.catarc.enterprise.shiro.realm.StatelessRealm">
+        <property name="userTokenCacheManager" ref="shiroCacheManager"/>
+        <property name="authenticationCachingEnabled" value="false"/>
+        <property name="authorizationCachingEnabled" value="false"/>
+    </bean>
+
+    <bean id="statelessAuthcFilter" class="com.zyt.catarc.enterprise.shiro.filter.StatelessAuthcFilter"/>
+    <bean id="wrapRequestFilter" class="com.zyt.catarc.enterprise.shiro.filter.WrapRequestFilter"/>
+
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="sessionValidationSchedulerEnabled" value="false"/>
+    </bean>
+
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="statelessRealm"/>
+        <property name="subjectDAO.sessionStorageEvaluator.sessionStorageEnabled" value="false"/>
+        <property name="subjectFactory" ref="subjectFactory"/>
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+
+    <!-- 相当于调用SecurityUtils.setSecurityManager(securityManager) -->
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod"
+                  value="org.apache.shiro.SecurityUtils.setSecurityManager"/>
+        <property name="arguments" ref="securityManager"/>
+    </bean>
+    <!-- Shiro生命周期处理器-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="filters">
+            <map>
+                <entry key="statelessAuthc" value-ref="statelessAuthcFilter"/>
+                <entry key="wrapRequest" value-ref="wrapRequestFilter"/>
+            </map>
+        </property>
+        <property name="filterChainDefinitions">
+            <value>
+                /**=wrapRequest,statelessAuthc
+            </value>
+        </property>
+    </bean>
+
+</beans>
